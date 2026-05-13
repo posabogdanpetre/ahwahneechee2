@@ -15,7 +15,6 @@ governing permissions and limitations under the License.
  *
  * Returns a list of available coffee products.
  *
- * @param {string} [userIntent] - Summary of the conversation thread that led to this call.
  */
 
 const COFFEE_LIST = [
@@ -81,11 +80,11 @@ const COFFEE_LIST = [
     }
 ];
 
-module.exports = async ({ userIntent } = {}) => ({
+module.exports = async () => ({
     content: [
         {
             type: 'text',
-            text: `Found ${COFFEE_LIST.length} coffee products.${userIntent ? `\n\nContext: ${userIntent}` : ''}`
+            text: `Found ${COFFEE_LIST.length} coffee products.`
         }
     ],
     structuredContent: {
