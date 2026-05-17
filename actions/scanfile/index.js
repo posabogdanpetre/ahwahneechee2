@@ -56,74 +56,46 @@ function isTextMime(mimeType) {
 
 module.exports = async ({ fileToBeScanned }) => {
   if (!fileToBeScanned) {
-    return {
-      content: [{ type: 'text', text: 'No file was provided. Please attach a file and try again.' }],
-      structuredContent: { error: 'missing_file' }
-    };
+    return { content: [{ type: 'text', text: 'No file was provided. Please attach a file and try again.' }] };
   }
 
   const { download_url, file_id, mime_type, file_name } = fileToBeScanned;
 
   if (!download_url) {
-    return {
-      content: [{ type: 'text', text: 'File reference is missing a download URL.' }],
-      structuredContent: { error: 'missing_download_url', file_id }
-    };
+    return { content: [{ type: 'text', text: 'File reference is missing a download URL.' }] };
   }
 
   let buffer;
   try {
     buffer = await fetchUrl(download_url);
   } catch (err) {
-    return {
-      content: [{ type: 'text', text: `Could not download file: ${err.message}` }],
-      structuredContent: { error: 'download_failed', detail: err.message, file_id }
-    };
+    return { content: [{ type: 'text', text: `Could not download file: ${err.message}` }] };
   }
 
   const sizeBytes = buffer.length;
   const looksLikeText = isTextMime(mime_type) || (mime_type == null && sizeBytes < 64 * 1024);
 
-  let preview = null;
-  let lineCount = null;
-  let wordCount = null;
-
+  let fileContent;
   if (looksLikeText) {
     try {
       const text = buffer.toString('utf8');
-      lineCount = text.split('\n').length;
-      wordCount = text.trim().split(/\s+/).filter(Boolean).length;
-      preview = text.length > MAX_PREVIEW_CHARS
-        ? `${text.slice(0, MAX_PREVIEW_CHARS)}… [truncated]`
+      fileContent = text.length > MAX_PREVIEW_CHARS
+        ? `${text.slice(0, MAX_PREVIEW_CHARS)}\n… [truncated — ${sizeBytes} bytes total]`
         : text;
     } catch (_) {
-      preview = '[binary content — not shown]';
+      fileContent = `[Could not decode file as UTF-8 text]`;
     }
   } else {
-    preview = '[binary content — not shown]';
+    fileContent = `[Binary file — cannot display content]\nFile: ${file_name || '(unknown)'}, Type: ${mime_type || 'unknown'}, Size: ${sizeBytes} bytes`;
   }
 
-  const result = {
-    file_name: file_name || '(unknown)',
-    file_id: file_id || null,
-    mime_type: mime_type || 'unknown',
-    size_bytes: sizeBytes,
-    line_count: lineCount,
-    word_count: wordCount,
-    preview
-  };
+  const wordCount = looksLikeText && typeof fileContent === 'string'
+    ? fileContent.trim().split(/\s+/).filter(Boolean).length
+    : null;
 
-  const summary = [
-    `File: ${result.file_name}`,
-    `Type: ${result.mime_type}`,
-    `Size: ${sizeBytes} bytes`,
-    lineCount != null ? `Lines: ${lineCount}` : null,
-    wordCount != null ? `Words: ${wordCount}` : null,
-    preview && looksLikeText ? `\nPreview:\n${preview}` : null
-  ].filter(Boolean).join('\n');
+  const text = looksLikeText
+    ? `Received "${file_name || 'unknown'}" — ${wordCount} word${wordCount === 1 ? '' : 's'}.`
+    : `Received binary file "${file_name || 'unknown'}" (${mime_type || 'unknown'}, ${sizeBytes} bytes).`;
 
-  return {
-    content: [{ type: 'text', text: summary }],
-    structuredContent: result
-  };
+  return { content: [{ type: 'text', text }] };
 };
