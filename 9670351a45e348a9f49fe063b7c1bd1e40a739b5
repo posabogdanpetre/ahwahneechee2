@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0.0",
+  "mode": "full",
+  "commit_sha": "9670351a45e348a9f49fe063b7c1bd1e40a739b5",
+  "author": "bposa@adobe.com",
+  "timestamp": "2026-05-25T15:30:30+03:00",
+  "detection": {
+    "ai_assisted": true,
+    "method": "editor_hook",
+    "tool": "cursor",
+    "model": "",
+    "confidence": 1.0
+  },
+  "stats": {
+    "total_additions": 115,
+    "total_deletions": 0,
+    "ai_additions": 115,
+    "ai_deletions": 0,
+    "human_additions": 0,
+    "human_deletions": 0
+  },
+  "files": {
+    "actions/getcoffeedetails/index.js": {
+      "ai_additions": 115,
+      "human_additions": 0,
+      "ai_deletions": 0,
+      "human_deletions": 0,
+      "ai_lines": "1-115",
+      "human_lines": ""
+    }
+  }
+}
