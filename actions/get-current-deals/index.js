@@ -70,7 +70,7 @@ module.exports = async ({ category = '' }) => {
             { type: 'text', text: contentText }
         ],
         structuredContent: {
-            items: results
+            deals: results
         }
     }
 }
