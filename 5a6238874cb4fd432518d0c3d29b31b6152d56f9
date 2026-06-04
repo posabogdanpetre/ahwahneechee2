@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0.0",
+  "mode": "full",
+  "commit_sha": "5a6238874cb4fd432518d0c3d29b31b6152d56f9",
+  "author": "bposa@adobe.com",
+  "timestamp": "2026-06-04T08:39:50+03:00",
+  "detection": {
+    "ai_assisted": false,
+    "method": "none",
+    "tool": "unknown",
+    "model": "",
+    "confidence": 0.0
+  },
+  "stats": {
+    "total_additions": 0,
+    "total_deletions": 478,
+    "ai_additions": 0,
+    "ai_deletions": 0,
+    "human_additions": 0,
+    "human_deletions": 478
+  },
+  "files": {
+    "actions/explore-places/index.js": {
+      "ai_additions": 0,
+      "human_additions": 0,
+      "ai_deletions": 0,
+      "human_deletions": 81
+    },
+    "actions/get-cultural-story/index.js": {
+      "ai_additions": 0,
+      "human_additions": 0,
+      "ai_deletions": 0,
+      "human_deletions": 133
+    },
+    "actions/get-current-deals/index.js": {
+      "ai_additions": 0,
+      "human_additions": 0,
+      "ai_deletions": 0,
+      "human_deletions": 99
+    },
+    "actions/get-place-details/index.js": {
+      "ai_additions": 0,
+      "human_additions": 0,
+      "ai_deletions": 0,
+      "human_deletions": 114
+    },
+    "test/actions/get-current-deals.test.js": {
+      "ai_additions": 0,
+      "human_additions": 0,
+      "ai_deletions": 0,
+      "human_deletions": 51
+    }
+  }
+}
