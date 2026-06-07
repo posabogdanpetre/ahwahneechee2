@@ -1,61 +1,59 @@
-/**
- * find_store — Finds Patagonia retail stores and authorized dealers near a given location
- */
-
-// Real scraped data from Action Planner
+// synthetic fixture — no sample data available from Action Planner
 const MOCK_DATA = [
     {
-        name: 'Patagonia Manchester',
-        address: '51 King Street, Manchester M2 7AZ',
-        phone: '+44 (0)161 834 4005',
-        hours: ''
+        name: 'Patagonia Denver',
+        address: '2600 Walnut St, Denver, CO 80205',
+        phone: '(303) 555-0142',
+        hours: 'Mon-Sat 10am-7pm, Sun 11am-6pm',
+        type: 'Retail Store'
     },
     {
-        name: 'Patagonia Bristol',
-        address: '81 Park Street, Bristol BS1 5PF',
-        phone: '+44 (0)1202017184',
-        hours: ''
+        name: 'Mountain Gear Outfitters',
+        address: '1401 Pearl St, Boulder, CO 80302',
+        phone: '(303) 555-0198',
+        hours: 'Mon-Sun 9am-8pm',
+        type: 'Authorized Dealer'
+    },
+    {
+        name: 'Patagonia Outlet Denver',
+        address: '1475 S Colorado Blvd, Denver, CO 80222',
+        phone: '(720) 555-0237',
+        hours: 'Mon-Sat 10am-8pm, Sun 11am-6pm',
+        type: 'Outlet'
     }
 ]
 
-module.exports = async ({ country, city = '' }) => {
+module.exports = async ({ location = '' }) => {
     // Validate required parameter
-    if (!country || typeof country !== 'string' || !country.trim()) {
+    if (!location || typeof location !== 'string' || !location.trim()) {
         return {
-            content: [{ type: 'text', text: 'Please provide a country to search in.' }],
-            structuredContent: { stores: [] } // structuredContent.stores — bare array outputSchema; key derived from actionName "find_store"
+            content: [{ type: 'text', text: 'Please provide a location (city, postcode, or address) to search for stores.' }],
+            structuredContent: { stores: [] }
         }
     }
 
-    const normalizedCountry = country.trim()
-    const normalizedCity = city.trim().toLowerCase()
+    const query = location.trim().toLowerCase()
 
-    // Filter by country and optional city
-    let results = MOCK_DATA.filter(store => {
-        // In production, filter by country from API data
-        // For now, all mock data is UK-based
-        if (normalizedCity && !store.address.toLowerCase().includes(normalizedCity)) {
-            return false
-        }
-        return true
+    // TODO: Replace MOCK_DATA with a real API call (see below)
+    // Filter stores by location (simple substring match for mock data)
+    const results = MOCK_DATA.filter(store => {
+        return store.address.toLowerCase().includes(query) ||
+               store.name.toLowerCase().includes(query)
     })
 
-    // Build directions URLs
-    results = results.map(store => ({
-        name: store.name,
-        address: store.address,
-        phone: store.phone,
-        directions_url: `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(store.address)}`
-    }))
+    if (results.length === 0) {
+        return {
+            content: [{ type: 'text', text: `No Patagonia stores found near "${location}".` }],
+            structuredContent: { stores: [] }
+        }
+    }
 
-    const cityText = normalizedCity ? ` in ${city}` : ''
-    const contentText = results.length > 0
-        ? `Found ${results.length} Patagonia ${results.length === 1 ? 'store' : 'stores'}${cityText}, ${normalizedCountry}.`
-        : `No Patagonia stores found${cityText} in ${normalizedCountry}.`
+    const summary = `Found ${results.length} Patagonia ${results.length === 1 ? 'store' : 'stores'} near ${location}.`
 
     return {
-        content: [{ type: 'text', text: contentText }],
-        structuredContent: { stores: results } // structuredContent.stores — bare array outputSchema; key derived from actionName "find_store"
+        content: [{ type: 'text', text: summary }],
+        // structuredContent.stores — bare array outputSchema; key derived from actionName "find_store"
+        structuredContent: { stores: results }
     }
 }
 
@@ -63,26 +61,21 @@ module.exports = async ({ country, city = '' }) => {
  * TODO: Replace MOCK_DATA with a real API call.
  *
  * Suggested endpoint pattern (update based on actual Patagonia API):
- *   GET ${process.env.API_BASE_URL}/store-locator?country=${country}&city=${city}
+ *   GET ${process.env.API_BASE_URL}/store-locator?location=${encodeURIComponent(location)}
  *
  * Environment variables to configure:
- *   API_BASE_URL   Base URL of the Patagonia store locator API
+ *   API_BASE_URL   Base URL of the Patagonia website's API
  *   API_KEY        API key if required (add to .env and app.config.yaml)
  *
- * Authentication: check Patagonia's store locator network requests for the
- *   correct endpoint and auth pattern.
+ * Authentication: check Patagonia's website network requests for the correct
+ *   store locator endpoint and any required headers.
  *
  * Example fetch:
- *   const url = new URL(`${process.env.API_BASE_URL}/store-locator`)
- *   url.searchParams.set('country', country)
- *   if (city) url.searchParams.set('city', city)
- *
- *   const res = await fetch(url.toString(), {
- *     headers: {
- *       'Authorization': `Bearer ${process.env.API_KEY}`,
- *       'Accept': 'application/json'
- *     }
- *   })
+ *   const res = await fetch(
+ *     `${process.env.API_BASE_URL}/store-locator?location=${encodeURIComponent(location)}`,
+ *     { headers: { 'Authorization': `Bearer ${process.env.API_KEY}` } }
+ *   )
  *   if (!res.ok) throw new Error(`API error: ${res.status}`)
- *   return await res.json()
+ *   const data = await res.json()
+ *   return data.stores || data.results || data
  */
