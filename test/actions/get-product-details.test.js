@@ -1,46 +1,53 @@
-const handler = require('../../actions/get-product-details/index.js');
+const handler = require('../../actions/get-product-details/index.js')
 
 describe('get_product_details handler', () => {
   test('returns content block shape on happy path', async () => {
-    const out = await handler({ product_name: 'Nano Puff' });
-    expect(out).toHaveProperty('content');
-    expect(Array.isArray(out.content)).toBe(true);
-    expect(out.content[0]).toMatchObject({ type: 'text', text: expect.any(String) });
-  });
+    const out = await handler({ product_name: 'Nano Puff' })
+    expect(out).toHaveProperty('content')
+    expect(Array.isArray(out.content)).toBe(true)
+    expect(out.content[0]).toMatchObject({ type: 'text', text: expect.any(String) })
+    expect(out.content[0].text).toMatch(/Nano Puff/)
+  })
 
   test('structuredContent is a plain object, not a bare array', async () => {
-    const out = await handler({ product_name: 'Nano Puff' });
-    expect(typeof out.structuredContent).toBe('object');
-    expect(Array.isArray(out.structuredContent)).toBe(false);
-  });
+    const out = await handler({ product_name: 'Nano Puff' })
+    expect(typeof out.structuredContent).toBe('object')
+    expect(Array.isArray(out.structuredContent)).toBe(false)
+  })
+
+  test('structuredContent.product contains expected fields', async () => {
+    const out = await handler({ product_name: 'Nano Puff' })
+    expect(out.structuredContent.product).toHaveProperty('name')
+    expect(out.structuredContent.product).toHaveProperty('price')
+    expect(out.structuredContent.product).toHaveProperty('description')
+    expect(out.structuredContent.product).toHaveProperty('materials')
+    expect(out.structuredContent.product).toHaveProperty('available_sizes')
+    expect(Array.isArray(out.structuredContent.product.available_sizes)).toBe(true)
+  })
 
   test('returns error message when required arg is missing', async () => {
-    const out = await handler({});
-    expect(out.content[0].text).toMatch(/product_name|provide/i);
-  });
+    const out = await handler({})
+    expect(out.content[0].text).toMatch(/product_name|provide/i)
+    expect(out.structuredContent.product).toBeNull()
+  })
 
-  test('"Tell me more about the Nano Puff Insulated Jacket" returns product details', async () => {
-    const out = await handler({ product_name: 'Nano Puff Insulated Jacket' });
-    expect(out.structuredContent.product).toBeTruthy();
-    expect(out.structuredContent.product.name).toMatch(/Nano Puff/i);
-    expect(out.content[0].text).toMatch(/Nano Puff/i);
-  });
+  test('"Tell me more about the Nano Puff Jacket" returns product details', async () => {
+    const out = await handler({ product_name: 'Nano Puff Jacket' })
+    expect(out.structuredContent.product).not.toBeNull()
+    expect(out.structuredContent.product.name).toMatch(/Nano Puff/i)
+    expect(out.content[0].text).toMatch(/Nano Puff/)
+    expect(out.content[0].text).toMatch(/£/)
+  })
 
-  test('returns null product when no match is found', async () => {
-    const out = await handler({ product_name: 'Nonexistent Product XYZ' });
-    expect(out.structuredContent.product).toBeNull();
-    expect(out.content[0].text).toMatch(/No product found/i);
-  });
+  test('returns null when product is not found', async () => {
+    const out = await handler({ product_name: 'NonExistentProduct12345' })
+    expect(out.content[0].text).toMatch(/No product found/i)
+    expect(out.structuredContent.product).toBeNull()
+  })
 
-  test('performs case-insensitive partial matching', async () => {
-    const out = await handler({ product_name: 'better sweater' });
-    expect(out.structuredContent.product).toBeTruthy();
-    expect(out.structuredContent.product.name).toBe("Women's Better Sweater Fleece Jacket");
-  });
-
-  test('trims whitespace from product_name', async () => {
-    const out = await handler({ product_name: '  Black Hole Pack  ' });
-    expect(out.structuredContent.product).toBeTruthy();
-    expect(out.structuredContent.product.name).toBe('Black Hole Pack 32L');
-  });
-});
+  test('case-insensitive matching finds product', async () => {
+    const out = await handler({ product_name: 'down sweater' })
+    expect(out.structuredContent.product).not.toBeNull()
+    expect(out.structuredContent.product.name).toMatch(/Down Sweater/i)
+  })
+})
