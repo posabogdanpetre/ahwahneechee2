@@ -1,89 +1,70 @@
-/**
- * get_product_details handler
- *
- * Retrieves detailed information about a single Patagonia product by name,
- * returning specifications including materials, features, sizing, price,
- * available colors, and sustainability information.
- */
-
-// TODO: Replace MOCK_DATA with a real API call.
-// See the TODO block below the handler for endpoint details.
+// synthetic fixture — no sample data available from Action Planner
 const MOCK_DATA = [
   {
-    "name": "Men's Nano Puff Insulated Jacket",
-    "description": "Weather-resistant, lightweight and packable synthetic insulation layer that stays warm when wet.",
-    "image_url": "https://eu.patagonia.com/dw/image/v2/BDJB_PRD/on/demandware.static/-/Sites-patagonia-master/default/dw8079c0d9/images/hi-res/84213_BLSG.jpg",
-    "price": "£170",
-    "category": "Jackets"
+    name: 'Better Sweater Fleece Jacket',
+    description: 'A versatile midweight fleece jacket made with 100% recycled polyester fleece. Features a full-zip front with a storm flap, raglan sleeves for pack-wearing comfort, and a zippered left chest pocket. Fair Trade Certified™ sewn.',
+    price: '$139.00',
+    category: 'Jackets & Vests',
+    materials: '100% recycled polyester fleece with a sweater-knit exterior and fleece interior',
+    features: 'Full-zip front with storm flap, raglan sleeves, zippered chest pocket, micropolyester jersey trim on collar and cuffs, Fair Trade Certified™ sewn',
+    fit: 'Regular',
+    image_url: 'https://www.patagonia.com/dw/image/v2/BDJB_PRD/on/demandware.static/-/Sites-patagonia-master/default/dw1234abcd/images/hi-res/25528_NUVG.jpg'
   },
   {
-    "name": "Men's Torrentshell 3L Rain Jacket",
-    "description": "Waterproof and breathable 3-layer rain jacket providing excellent performance and durability.",
-    "image_url": "https://eu.patagonia.com/dw/image/v2/BDJB_PRD/on/demandware.static/-/Sites-patagonia-master/default/dw3f39aea6/images/hi-res/85241_LMST.jpg",
-    "price": "£180",
-    "category": "Jackets"
+    name: 'Nano Puff Jacket',
+    description: 'Warm, windproof, water-resistant—the Nano Puff Jacket uses incredibly lightweight and highly compressible 60-g PrimaLoft Gold Insulation Eco 100% postconsumer recycled polyester with P.U.R.E. technology. Fair Trade Certified™ sewn.',
+    price: '$249.00',
+    category: 'Jackets & Vests',
+    materials: 'Shell: 100% recycled polyester ripstop with DWR finish. Insulation: 60-g PrimaLoft Gold Insulation Eco 100% postconsumer recycled polyester',
+    features: 'Center-front zipper with interior storm flap, two zippered handwarmer pockets, internal chest pocket doubles as stuffsack with reinforced carabiner clip-in loop, Fair Trade Certified™ sewn',
+    fit: 'Regular',
+    image_url: 'https://www.patagonia.com/dw/image/v2/BDJB_PRD/on/demandware.static/-/Sites-patagonia-master/default/dw5678efgh/images/hi-res/84212_BLK.jpg'
   },
   {
-    "name": "Women's Better Sweater Fleece Jacket",
-    "description": "Full-zip jacket made of warm, 100% recycled polyester fleece.",
-    "image_url": "https://eu.patagonia.com/dw/image/v2/BDJB_PRD/on/demandware.static/-/Sites-patagonia-master/default/dwb74b05e1/images/hi-res/25543_NENA.jpg",
-    "price": "£130",
-    "category": "Fleece"
-  },
-  {
-    "name": "Women's Down Sweater Insulated Jacket",
-    "description": "Lightweight, windproof jacket with a recycled nylon shell and 800-fill-power down.",
-    "image_url": "https://eu.patagonia.com/dw/image/v2/BDJB_PRD/on/demandware.static/-/Sites-patagonia-master/default/dw4729f37a/images/hi-res/84684_BNLB.jpg",
-    "price": "£230",
-    "category": "Jackets"
-  },
-  {
-    "name": "Men's R1 Air Fleece Midlayer Jacket",
-    "description": "Lightweight, highly breathable and quick-drying technical fleece jacket for cool conditions.",
-    "image_url": "https://eu.patagonia.com/dw/image/v2/BDJB_PRD/on/demandware.static/-/Sites-patagonia-master/default/dwce5a595b/images/hi-res/40275_CLOR.jpg",
-    "price": "£130",
-    "category": "Fleece"
-  },
-  {
-    "name": "Black Hole Pack 32L",
-    "description": "Weather-resistant pack perfect for the daily commute and rugged enough to haul around the globe.",
-    "image_url": "https://eu.patagonia.com/dw/image/v2/BDJB_PRD/on/demandware.static/-/Sites-patagonia-master/default/dwa49c297f/images/hi-res/49302_SMFO.jpg",
-    "price": "£155",
-    "category": "Packs & Gear"
+    name: 'Torrentshell 3L Rain Jacket',
+    description: 'A simple, lightweight, waterproof/breathable rain jacket made with 3-layer H2No Performance Standard shell and a PFC-free DWR finish. Features an adjustable hood, two handwarmer pockets, and self-stuffs into the left handwarmer pocket. Fair Trade Certified™ sewn.',
+    price: '$179.00',
+    category: 'Jackets & Vests',
+    materials: '3-layer 100% recycled nylon ripstop with H2No Performance Standard and PFC-free DWR finish',
+    features: '2-way-adjustable hood, center-front zipper with external and internal storm flaps, two handwarmer pockets, venting pit zips, self-stuffs into left pocket, Fair Trade Certified™ sewn',
+    fit: 'Regular',
+    image_url: 'https://www.patagonia.com/dw/image/v2/BDJB_PRD/on/demandware.static/-/Sites-patagonia-master/default/dw9012ijkl/images/hi-res/85241_SMDB.jpg'
   }
-];
+]
 
-module.exports = async ({ product_name = '' }) => {
+module.exports = async ({ product_name }) => {
   // Validate required parameter
   if (!product_name || typeof product_name !== 'string' || !product_name.trim()) {
     return {
-      content: [{ type: 'text', text: 'Please provide a product_name to retrieve details for.' }],
+      content: [{ type: 'text', text: 'Please provide a product_name to retrieve details.' }],
       structuredContent: { product: null }
-    };
+    }
   }
 
-  const query = product_name.trim().toLowerCase();
+  const query = product_name.trim()
 
-  // Look up the product by name (case-insensitive partial match)
-  const product = MOCK_DATA.find(p => p.name.toLowerCase().includes(query));
+  // Look up the product by name (case-insensitive)
+  const product = MOCK_DATA.find(p => p.name.toLowerCase() === query.toLowerCase())
 
   if (!product) {
     return {
-      content: [{ type: 'text', text: `No product found matching: ${product_name}` }],
+      content: [{ type: 'text', text: `No product found with the name: ${product_name}` }],
       structuredContent: { product: null }
-    };
+    }
   }
 
-  // Return product details
+  // Return the product details
   return {
-    content: [{
-      type: 'text',
-      text: `Found product: ${product.name}. ${product.description} Price: ${product.price}. Category: ${product.category}.`
-    }],
-    // structuredContent.product — bare array outputSchema; key derived from actionName "get_product_details"
+    content: [
+      {
+        type: 'text',
+        text: `Found product: ${product.name}. ${product.description} Price: ${product.price}.`
+      }
+    ],
+    // structuredContent.product — detail outputSchema; key derived from actionName "get_product_details"
     structuredContent: { product }
-  };
-};
+  }
+}
 
 /*
  * TODO: Replace MOCK_DATA with a real API call.
@@ -94,7 +75,7 @@ module.exports = async ({ product_name = '' }) => {
  *   GET ${process.env.API_BASE_URL}/products/${productId}
  *
  * Environment variables to configure:
- *   API_BASE_URL   Base URL of the Patagonia API
+ *   API_BASE_URL   Base URL of the Patagonia website API
  *   API_KEY        API key if required (add to .env and app.config.yaml)
  *
  * Authentication: check the website's developer docs or network requests
@@ -104,8 +85,8 @@ module.exports = async ({ product_name = '' }) => {
  *   const res = await fetch(
  *     `${process.env.API_BASE_URL}/products?name=${encodeURIComponent(product_name)}`,
  *     { headers: { 'Authorization': `Bearer ${process.env.API_KEY}` } }
- *   );
- *   if (!res.ok) throw new Error(`API error: ${res.status}`);
- *   const data = await res.json();
- *   return data.products?.[0] || null;
+ *   )
+ *   if (!res.ok) throw new Error(`API error: ${res.status}`)
+ *   const data = await res.json()
+ *   return data.products && data.products.length > 0 ? data.products[0] : null
  */
