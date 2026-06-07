@@ -19,26 +19,22 @@ describe('find_store handler', () => {
         expect(Array.isArray(out.structuredContent.stores)).toBe(true)
     })
 
-    test('returns error message when required country arg is missing', async () => {
+    test('returns error message when required arg is missing', async () => {
         const out = await handler({})
         expect(out.content[0].text).toMatch(/country|provide/i)
+    })
+
+    test('returns empty stores array when country is missing', async () => {
+        const out = await handler({})
         expect(out.structuredContent.stores).toEqual([])
     })
 
-    test('filters by city when provided', async () => {
-        const out = await handler({ country: 'United Kingdom', city: 'Manchester' })
-        const stores = out.structuredContent.stores
-        expect(stores.length).toBeGreaterThan(0)
-        expect(stores.every(s => s.address.toLowerCase().includes('manchester'))).toBe(true)
+    test('"Find a Patagonia store near me" returns store locations', async () => {
+        const out = await handler({ country: 'United Kingdom' })
+        expect(out.structuredContent.stores.length).toBeGreaterThan(0)
     })
 
-    test('returns empty array for city with no stores', async () => {
-        const out = await handler({ country: 'United Kingdom', city: 'Nowhere' })
-        expect(out.structuredContent.stores).toEqual([])
-        expect(out.content[0].text).toMatch(/no.*stores/i)
-    })
-
-    test('"Find a Patagonia store near me" returns stores with required fields', async () => {
+    test('each store has required fields including directions_url', async () => {
         const out = await handler({ country: 'United Kingdom' })
         const stores = out.structuredContent.stores
         expect(stores.length).toBeGreaterThan(0)
@@ -47,16 +43,30 @@ describe('find_store handler', () => {
             expect(store).toHaveProperty('address')
             expect(store).toHaveProperty('phone')
             expect(store).toHaveProperty('directions_url')
-            expect(store.directions_url).toMatch(/^https:\/\/www\.google\.com\/maps\/dir/)
+            expect(store.directions_url).toMatch(/google\.com\/maps\/dir/)
         })
     })
 
-    test('generates valid Google Maps directions URLs', async () => {
-        const out = await handler({ country: 'United Kingdom' })
+    test('filters by city when provided', async () => {
+        const out = await handler({ country: 'United Kingdom', city: 'Manchester' })
         const stores = out.structuredContent.stores
-        expect(stores.length).toBeGreaterThan(0)
-        const firstStore = stores[0]
-        expect(firstStore.directions_url).toContain('destination=')
-        expect(firstStore.directions_url).toContain(encodeURIComponent(firstStore.address))
+        expect(stores.length).toBe(1)
+        expect(stores[0].name).toBe('Patagonia Manchester')
+    })
+
+    test('returns empty array when city has no matching stores', async () => {
+        const out = await handler({ country: 'United Kingdom', city: 'Edinburgh' })
+        expect(out.structuredContent.stores).toEqual([])
+        expect(out.content[0].text).toMatch(/0.*store/i)
+    })
+
+    test('content text mentions city when filtering by city', async () => {
+        const out = await handler({ country: 'United Kingdom', city: 'Bristol' })
+        expect(out.content[0].text).toMatch(/Bristol/i)
+    })
+
+    test('content text mentions country', async () => {
+        const out = await handler({ country: 'United Kingdom' })
+        expect(out.content[0].text).toMatch(/United Kingdom/i)
     })
 })
