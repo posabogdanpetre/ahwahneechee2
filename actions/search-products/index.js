@@ -1,136 +1,89 @@
-/**
- * search_products
- * 
- * Searches Patagonia's outdoor clothing and gear catalog using optional filters for 
- * category, sport, and gender, returning an array of product objects with name, price, 
- * image, and category.
- */
-
-// TODO: Replace MOCK_DATA with a real API call.
-// See the TODO block below the handler for endpoint details.
 const MOCK_DATA = [
-  {
-    "name": "Men's Nano Puff Insulated Jacket",
-    "description": "Weather-resistant, lightweight and packable synthetic insulation layer that stays warm when wet.",
-    "image_url": "https://eu.patagonia.com/dw/image/v2/BDJB_PRD/on/demandware.static/-/Sites-patagonia-master/default/dw8079c0d9/images/hi-res/84213_BLSG.jpg",
-    "price": "£170",
-    "category": "Jackets"
-  },
-  {
-    "name": "Men's Torrentshell 3L Rain Jacket",
-    "description": "Waterproof and breathable 3-layer rain jacket providing excellent performance and durability.",
-    "image_url": "https://eu.patagonia.com/dw/image/v2/BDJB_PRD/on/demandware.static/-/Sites-patagonia-master/default/dw3f39aea6/images/hi-res/85241_LMST.jpg",
-    "price": "£180",
-    "category": "Jackets"
-  },
-  {
-    "name": "Women's Better Sweater Fleece Jacket",
-    "description": "Full-zip jacket made of warm, 100% recycled polyester fleece.",
-    "image_url": "https://eu.patagonia.com/dw/image/v2/BDJB_PRD/on/demandware.static/-/Sites-patagonia-master/default/dwb74b05e1/images/hi-res/25543_NENA.jpg",
-    "price": "£130",
-    "category": "Fleece"
-  },
-  {
-    "name": "Women's Down Sweater Insulated Jacket",
-    "description": "Lightweight, windproof jacket with a recycled nylon shell and 800-fill-power down.",
-    "image_url": "https://eu.patagonia.com/dw/image/v2/BDJB_PRD/on/demandware.static/-/Sites-patagonia-master/default/dw4729f37a/images/hi-res/84684_BNLB.jpg",
-    "price": "£230",
-    "category": "Jackets"
-  },
-  {
-    "name": "Men's R1 Air Fleece Midlayer Jacket",
-    "description": "Lightweight, highly breathable and quick-drying technical fleece jacket for cool conditions.",
-    "image_url": "https://eu.patagonia.com/dw/image/v2/BDJB_PRD/on/demandware.static/-/Sites-patagonia-master/default/dwce5a595b/images/hi-res/40275_CLOR.jpg",
-    "price": "£130",
-    "category": "Fleece"
-  },
-  {
-    "name": "Black Hole Pack 32L",
-    "description": "Weather-resistant pack perfect for the daily commute and rugged enough to haul around the globe.",
-    "image_url": "https://eu.patagonia.com/dw/image/v2/BDJB_PRD/on/demandware.static/-/Sites-patagonia-master/default/dwa49c297f/images/hi-res/49302_SMFO.jpg",
-    "price": "£155",
-    "category": "Packs & Gear"
-  }
-];
-
-module.exports = async ({ category = '', sport = '', gender = '' }) => {
-  // Apply filters to MOCK_DATA
-  const results = MOCK_DATA.filter(item => {
-    // Filter by category if provided
-    if (category && category.trim()) {
-      if (!item.category || !item.category.toLowerCase().includes(category.trim().toLowerCase())) {
-        return false;
-      }
+    {
+        name: "Men's Down Sweater Jacket",
+        description: "Lightweight, windproof jacket with 800-fill-power recycled down insulation and a recycled nylon ripstop shell.",
+        image_url: "https://eu.patagonia.com/dw/image/v2/BDJB_PRD/on/demandware.static/-/Sites-patagonia-master/default/dw3c83e113/images/hi-res/84675_CLOR.jpg?sw=800&sh=800&sfrm=png&q=95&bgcolor=f3f4ef",
+        price: 230,
+        category: "Insulated Jackets",
+        rating: 4.5,
+        review_count: 128,
+        product_url: "https://eu.patagonia.com/gb/en/product/mens-down-sweater-jacket/84675.html"
+    },
+    {
+        name: "Women's Better Sweater Fleece Jacket",
+        description: "Warm 100% recycled polyester full-zip fleece jacket with a sweater-knit aesthetic.",
+        image_url: "https://eu.patagonia.com/dw/image/v2/BDJB_PRD/on/demandware.static/-/Sites-patagonia-master/default/dwb74b05e1/images/hi-res/25543_NENA.jpg?sw=800&sh=800&sfrm=png&q=95&bgcolor=f3f4ef",
+        price: 130,
+        category: "Fleece",
+        rating: 4.7,
+        review_count: 342,
+        product_url: "https://eu.patagonia.com/gb/en/product/womens-better-sweater-fleece-jacket/25543.html"
+    },
+    {
+        name: "Men's Torrentshell 3L Rain Jacket",
+        description: "Waterproof/breathable 3-layer rain jacket with H2No Performance Standard shell, made without PFAS.",
+        image_url: "https://eu.patagonia.com/dw/image/v2/BDJB_PRD/on/demandware.static/-/Sites-patagonia-master/default/dw3f39aea6/images/hi-res/85241_LMST.jpg?sw=800&sh=800&sfrm=png&q=95&bgcolor=f3f4ef",
+        price: 180,
+        category: "Rain Jackets",
+        rating: 4.6,
+        review_count: 215,
+        product_url: "https://eu.patagonia.com/gb/en/product/mens-torrentshell-3l-rain-jacket/85241.html"
     }
-    
-    // Filter by gender if provided (check product name for gender keywords)
-    if (gender && gender.trim()) {
-      const genderLower = gender.trim().toLowerCase();
-      const nameLower = item.name.toLowerCase();
-      
-      if (genderLower === 'mens' || genderLower === 'men') {
-        if (!nameLower.includes('men\'s')) return false;
-      } else if (genderLower === 'womens' || genderLower === 'women') {
-        if (!nameLower.includes('women\'s')) return false;
-      } else if (genderLower === 'kids') {
-        if (!nameLower.includes('kids') && !nameLower.includes('youth')) return false;
-      }
-    }
-    
-    // Sport filter would typically filter by tags/metadata not present in this fixture
-    // In a real implementation, this would check item.sport or item.tags array
-    
-    return true;
-  });
+]
 
-  // Build content text
-  let contentText = '';
-  if (results.length === 0) {
-    contentText = 'No products found matching your criteria.';
-  } else {
-    const filterParts = [];
-    if (category) filterParts.push(`category: ${category}`);
-    if (gender) filterParts.push(`gender: ${gender}`);
-    if (sport) filterParts.push(`sport: ${sport}`);
-    
-    const filterText = filterParts.length > 0 ? ` (${filterParts.join(', ')})` : '';
-    contentText = `Found ${results.length} product${results.length === 1 ? '' : 's'}${filterText}.`;
-  }
+module.exports = async ({ query = '', category = '' }) => {
+    const normalizedQuery = query.trim().toLowerCase()
+    const normalizedCategory = category.trim()
 
-  return {
-    content: [
-      { type: 'text', text: contentText }
-    ],
-    // structuredContent.products — bare array outputSchema; key derived from actionName "search_products"
-    structuredContent: {
-      products: results
+    const results = MOCK_DATA.filter(item => {
+        if (normalizedCategory && item.category !== normalizedCategory) {
+            return false
+        }
+        if (normalizedQuery) {
+            const searchableText = `${item.name} ${item.description} ${item.category}`.toLowerCase()
+            if (!searchableText.includes(normalizedQuery)) {
+                return false
+            }
+        }
+        return true
+    })
+
+    const contentText = results.length > 0
+        ? `Found ${results.length} product${results.length === 1 ? '' : 's'}${normalizedCategory ? ` in category "${normalizedCategory}"` : ''}${normalizedQuery ? ` matching "${query}"` : ''}.`
+        : `No products found${normalizedCategory ? ` in category "${normalizedCategory}"` : ''}${normalizedQuery ? ` matching "${query}"` : ''}.`
+
+    return {
+        content: [
+            { type: 'text', text: contentText }
+        ],
+        // structuredContent.products — bare array outputSchema; key derived from actionName "search_products"
+        structuredContent: {
+            products: results
+        }
     }
-  };
-};
+}
 
 /*
  * TODO: Replace MOCK_DATA with a real API call.
  *
  * Suggested endpoint pattern (update based on actual site API):
- *   GET ${process.env.API_BASE_URL}/products?category=${category}&sport=${sport}&gender=${gender}
+ *   GET ${process.env.API_BASE_URL}/products?query=${query}&category=${category}
  *
  * Environment variables to configure:
  *   API_BASE_URL   Base URL of the Patagonia API
  *   API_KEY        API key if required (add to .env and app.config.yaml)
  *
- * Authentication: check the Patagonia website's developer docs or network requests
+ * Authentication: check the website's developer docs or network requests
  *   captured during browsing for the correct auth header pattern.
  *
  * Example fetch:
- *   const params = new URLSearchParams();
- *   if (category) params.append('category', category);
- *   if (sport) params.append('sport', sport);
- *   if (gender) params.append('gender', gender);
+ *   const url = new URL(`${process.env.API_BASE_URL}/products`)
+ *   if (query) url.searchParams.set('query', query)
+ *   if (category) url.searchParams.set('category', category)
  *   
- *   const res = await fetch(
- *     `${process.env.API_BASE_URL}/products?${params.toString()}`,
- *     { headers: { 'Authorization': `Bearer ${process.env.API_KEY}` } }
- *   );
- *   if (!res.ok) throw new Error(`API error: ${res.status}`);
- *   return await res.json();
+ *   const res = await fetch(url.toString(), {
+ *     headers: { 'Authorization': `Bearer ${process.env.API_KEY}` }
+ *   })
+ *   if (!res.ok) throw new Error(`API error: ${res.status}`)
+ *   return await res.json()
  */
