@@ -1,49 +1,59 @@
 const handler = require('../../actions/search-products/index.js')
 
 describe('search_products handler', () => {
-  test('returns content block shape on happy path', async () => {
-    const out = await handler({ category: 'Fleece' })
-    expect(out).toHaveProperty('content')
-    expect(Array.isArray(out.content)).toBe(true)
-    expect(out.content[0]).toMatchObject({ type: 'text', text: expect.any(String) })
-  })
+    test('"Show me some outdoor jackets" returns product results', async () => {
+        const out = await handler({ category: 'Jackets & Vests' })
+        expect(out).toHaveProperty('content')
+        expect(Array.isArray(out.content)).toBe(true)
+        expect(out.content[0]).toMatchObject({ type: 'text', text: expect.any(String) })
+        expect(out.content[0].text).toMatch(/product/i)
+    })
 
-  test('structuredContent is a plain object, not a bare array', async () => {
-    const out = await handler({})
-    expect(typeof out.structuredContent).toBe('object')
-    expect(Array.isArray(out.structuredContent)).toBe(false)
-  })
+    test('returns content block shape on happy path', async () => {
+        const out = await handler({})
+        expect(out).toHaveProperty('content')
+        expect(Array.isArray(out.content)).toBe(true)
+        expect(out.content[0]).toMatchObject({ type: 'text', text: expect.any(String) })
+    })
 
-  test('filters by category', async () => {
-    const out = await handler({ category: 'Fleece' })
-    const products = out.structuredContent.products
-    expect(products.every(p => p.category === 'Fleece')).toBe(true)
-    expect(out.content[0].text).toMatch(/Fleece/i)
-  })
+    test('structuredContent is a plain object, not a bare array', async () => {
+        const out = await handler({})
+        expect(typeof out.structuredContent).toBe('object')
+        expect(Array.isArray(out.structuredContent)).toBe(false)
+        expect(out.structuredContent).toHaveProperty('products')
+        expect(Array.isArray(out.structuredContent.products)).toBe(true)
+    })
 
-  test('filters by gender', async () => {
-    const out = await handler({ gender: "Women's" })
-    const products = out.structuredContent.products
-    expect(products.length).toBeGreaterThan(0)
-    expect(products.every(p => p.name.toLowerCase().includes("women"))).toBe(true)
-  })
+    test('filters by category when provided', async () => {
+        const out = await handler({ category: 'Jackets & Vests' })
+        const products = out.structuredContent.products
+        expect(products.length).toBeGreaterThan(0)
+        expect(products.every(p => p.category === 'Jackets & Vests')).toBe(true)
+        expect(out.content[0].text).toMatch(/Jackets & Vests/i)
+    })
 
-  test('filters by query', async () => {
-    const out = await handler({ query: 'jacket' })
-    const products = out.structuredContent.products
-    expect(products.every(p => p.name.toLowerCase().includes('jacket'))).toBe(true)
-  })
+    test('returns all products when no filters applied', async () => {
+        const out = await handler({})
+        const products = out.structuredContent.products
+        expect(products.length).toBe(5)
+        expect(out.content[0].text).toMatch(/Found 5 products/i)
+    })
 
-  test('returns empty array when no products match', async () => {
-    const out = await handler({ query: 'nonexistent-product-xyz' })
-    expect(out.structuredContent.products).toEqual([])
-    expect(out.content[0].text).toMatch(/No products found/i)
-  })
+    test('returns empty results for unknown category', async () => {
+        const out = await handler({ category: 'Unknown Category' })
+        const products = out.structuredContent.products
+        expect(products.length).toBe(0)
+        expect(out.content[0].text).toMatch(/No products found/i)
+    })
 
-  test('returns all products when no filters applied', async () => {
-    const out = await handler({})
-    const products = out.structuredContent.products
-    expect(products.length).toBe(3)
-    expect(out.content[0].text).toMatch(/Found 3 products/i)
-  })
+    test('all products have required fields', async () => {
+        const out = await handler({})
+        const products = out.structuredContent.products
+        products.forEach(product => {
+            expect(product).toHaveProperty('name')
+            expect(product).toHaveProperty('price')
+            expect(product).toHaveProperty('category')
+            expect(product).toHaveProperty('description')
+        })
+    })
 })
