@@ -1,56 +1,61 @@
 // synthetic fixture — no sample data available from Action Planner
 const MOCK_DATA = [
     {
-        name: 'Patagonia Santa Monica',
-        address: '1344 4th Street, Santa Monica, CA 90401',
-        phone: '(310) 458-5500',
+        name: 'Patagonia SoHo',
+        address: '72 Greene Street',
+        city: 'New York',
+        phone: '(212) 343-1776',
+        hours: 'Mon-Sat 10am-8pm, Sun 11am-7pm',
+        store_type: 'Retail Store'
+    },
+    {
+        name: 'Patagonia Chicago',
+        address: '48 East Walton Street',
+        city: 'Chicago',
+        phone: '(312) 951-0518',
         hours: 'Mon-Sat 10am-7pm, Sun 11am-6pm',
-        store_type: 'Patagonia Owned'
+        store_type: 'Retail Store'
     },
     {
-        name: 'REI Co-op - San Francisco',
-        address: '840 Brannan Street, San Francisco, CA 94103',
-        phone: '(415) 934-1938',
-        hours: 'Mon-Sat 10am-9pm, Sun 10am-7pm',
-        store_type: 'Authorized Dealer'
-    },
-    {
-        name: 'Patagonia Portland',
-        address: '907 NW Irving Street, Portland, OR 97209',
+        name: 'Patagonia Portland Outlet',
+        address: '907 NW Irving Street',
+        city: 'Portland',
         phone: '(503) 525-2552',
-        hours: 'Mon-Sat 10am-7pm, Sun 11am-6pm',
-        store_type: 'Patagonia Owned'
+        hours: 'Mon-Sun 10am-7pm',
+        store_type: 'Outlet'
     }
 ]
 
-module.exports = async (args) => {
-    const { location = '' } = args
-
-    // Validate required parameter
+module.exports = async ({ location = '' }) => {
     if (!location || typeof location !== 'string' || !location.trim()) {
         return {
-            content: [{ type: 'text', text: 'Please provide a location (city, postal code, or address) to search near.' }],
+            content: [{ type: 'text', text: 'Please provide a location (city name or postal code) to search for stores.' }],
             structuredContent: { stores: [] }
         }
     }
 
     const query = location.trim().toLowerCase()
 
-    // Filter stores by location query (simple substring match for mock data)
-    const results = MOCK_DATA.filter(store => {
-        return store.address.toLowerCase().includes(query) ||
-               store.name.toLowerCase().includes(query)
-    })
+    // Filter stores by matching city name or postal code (in a real implementation,
+    // this would be a geocoded radius search via the API)
+    const results = MOCK_DATA.filter(store =>
+        store.city.toLowerCase().includes(query) ||
+        store.address.toLowerCase().includes(query)
+    )
 
-    // TODO: Replace MOCK_DATA with a real API call to Patagonia's store locator endpoint.
-    // The actual implementation should geocode the location input and find nearby stores.
+    if (results.length === 0) {
+        return {
+            content: [{ type: 'text', text: `No Patagonia stores found near "${location}".` }],
+            structuredContent: { stores: [] }
+        }
+    }
 
-    const contentText = results.length > 0
-        ? `Found ${results.length} Patagonia ${results.length === 1 ? 'store' : 'stores'} near ${location}.`
-        : `No Patagonia stores found near ${location}. Try a different location or broader search term.`
+    const summary = results.length === 1
+        ? `Found 1 Patagonia store near ${location}.`
+        : `Found ${results.length} Patagonia stores near ${location}.`
 
     return {
-        content: [{ type: 'text', text: contentText }],
+        content: [{ type: 'text', text: summary }],
         // structuredContent.stores — bare array outputSchema; key derived from actionName "find_store"
         structuredContent: { stores: results }
     }
@@ -60,21 +65,21 @@ module.exports = async (args) => {
  * TODO: Replace MOCK_DATA with a real API call.
  *
  * Suggested endpoint pattern (update based on actual Patagonia API):
- *   GET ${process.env.API_BASE_URL}/store-locator?location=${encodeURIComponent(location)}
+ *   GET ${process.env.API_BASE_URL}/stores?location=${encodeURIComponent(location)}
  *
  * Environment variables to configure:
- *   API_BASE_URL   Base URL of Patagonia's store locator API
+ *   API_BASE_URL   Base URL of the Patagonia store locator API
  *   API_KEY        API key if required (add to .env and app.config.yaml)
  *
- * Authentication: check Patagonia's developer docs or network requests
- *   captured during browsing for the correct auth header pattern.
+ * Authentication: check Patagonia's website network requests for the correct
+ *   store locator endpoint and any required auth headers.
  *
  * Example fetch:
  *   const res = await fetch(
- *     `${process.env.API_BASE_URL}/store-locator?location=${encodeURIComponent(location)}`,
+ *     `${process.env.API_BASE_URL}/stores?location=${encodeURIComponent(location)}`,
  *     { headers: { 'Authorization': `Bearer ${process.env.API_KEY}` } }
  *   )
  *   if (!res.ok) throw new Error(`API error: ${res.status}`)
  *   const data = await res.json()
- *   return data.stores || []
+ *   return data.stores || data
  */
