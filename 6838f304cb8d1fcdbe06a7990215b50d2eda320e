@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0.0",
+  "mode": "full",
+  "commit_sha": "6838f304cb8d1fcdbe06a7990215b50d2eda320e",
+  "author": "bposa@adobe.com",
+  "timestamp": "2026-06-14T22:45:19+03:00",
+  "detection": {
+    "ai_assisted": false,
+    "method": "none",
+    "tool": "unknown",
+    "model": "",
+    "confidence": 0.0
+  },
+  "stats": {
+    "total_additions": 0,
+    "total_deletions": 275,
+    "ai_additions": 0,
+    "ai_deletions": 0,
+    "human_additions": 0,
+    "human_deletions": 275
+  },
+  "files": {
+    "actions/find-store/index.js": {
+      "ai_additions": 0,
+      "human_additions": 0,
+      "ai_deletions": 0,
+      "human_deletions": 68
+    },
+    "actions/get-product-details/index.js": {
+      "ai_additions": 0,
+      "human_additions": 0,
+      "ai_deletions": 0,
+      "human_deletions": 128
+    },
+    "actions/search-products/index.js": {
+      "ai_additions": 0,
+      "human_additions": 0,
+      "ai_deletions": 0,
+      "human_deletions": 79
+    }
+  }
+}
