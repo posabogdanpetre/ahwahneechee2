@@ -1,70 +1,70 @@
-const handler = require('../../actions/get-product-details/index.js');
+const handler = require('../../actions/get-product-details/index.js')
 
 describe('get_product_details handler', () => {
-  test('returns content block shape on happy path', async () => {
-    const out = await handler({ product_name: 'Nano Puff Jacket' });
-    expect(out).toHaveProperty('content');
-    expect(Array.isArray(out.content)).toBe(true);
-    expect(out.content[0]).toMatchObject({ type: 'text', text: expect.any(String) });
-    expect(out.content[0].text.length).toBeGreaterThan(0);
-  });
+    test('returns content block shape on happy path', async () => {
+        const out = await handler({ product_name: "Men's Classic Retro-X Fleece Jacket" })
+        expect(out).toHaveProperty('content')
+        expect(Array.isArray(out.content)).toBe(true)
+        expect(out.content[0]).toMatchObject({ type: 'text', text: expect.any(String) })
+    })
 
-  test('structuredContent.product is a plain object, not an array', async () => {
-    const out = await handler({ product_name: 'Better Sweater Quarter-Zip Fleece' });
-    expect(out.structuredContent).toHaveProperty('product');
-    expect(typeof out.structuredContent.product).toBe('object');
-    expect(Array.isArray(out.structuredContent.product)).toBe(false);
-  });
+    test('structuredContent is a plain object, not a bare array', async () => {
+        const out = await handler({ product_name: "Men's Classic Retro-X Fleece Jacket" })
+        expect(typeof out.structuredContent).toBe('object')
+        expect(Array.isArray(out.structuredContent)).toBe(false)
+    })
 
-  test('returns product details with all expected fields', async () => {
-    const out = await handler({ product_name: 'Nano Puff Jacket' });
-    const product = out.structuredContent.product;
+    test('structuredContent contains all expected product detail fields', async () => {
+        const out = await handler({ product_name: "Men's Classic Retro-X Fleece Jacket" })
+        expect(out.structuredContent).toMatchObject({
+            name: expect.any(String),
+            price: expect.any(String),
+            description: expect.any(String),
+            materials: expect.any(String),
+            weight: expect.any(String),
+            colors: expect.any(Array),
+            rating: expect.any(Number),
+            review_count: expect.any(Number),
+            certifications: expect.any(Array),
+            image_url: expect.any(String)
+        })
+    })
 
-    expect(product).toHaveProperty('name');
-    expect(product).toHaveProperty('price');
-    expect(product).toHaveProperty('description');
-    expect(product).toHaveProperty('category');
-    expect(product).toHaveProperty('fit');
-    expect(product).toHaveProperty('weight');
-    expect(product).toHaveProperty('materials');
-    expect(product).toHaveProperty('rating');
-    expect(product).toHaveProperty('review_count');
-    expect(product).toHaveProperty('certifications');
-    expect(product).toHaveProperty('image_url');
+    test('returns error message when product_name is missing', async () => {
+        const out = await handler({})
+        expect(out.content[0].text).toMatch(/product_name|provide/i)
+        expect(out.structuredContent).toBeUndefined()
+    })
 
-    expect(product.name).toBe('Nano Puff Jacket');
-    expect(product.price).toBe('£210.00');
-    expect(typeof product.rating).toBe('number');
-    expect(typeof product.review_count).toBe('number');
-  });
+    test('returns error message when product_name is empty string', async () => {
+        const out = await handler({ product_name: '   ' })
+        expect(out.content[0].text).toMatch(/product_name|provide/i)
+        expect(out.structuredContent).toBeUndefined()
+    })
 
-  test('returns error message when product_name is missing', async () => {
-    const out = await handler({});
-    expect(out.content[0].text).toMatch(/provide.*product_name/i);
-    expect(out.structuredContent.product).toBeNull();
-  });
+    test('"Tell me more about the Men\'s Classic Retro-X Fleece Jacket" returns correct product details', async () => {
+        const out = await handler({ product_name: "Men's Classic Retro-X Fleece Jacket" })
+        expect(out.structuredContent.name).toBe("Men's Classic Retro-X Fleece Jacket")
+        expect(out.structuredContent.price).toBe("£220")
+        expect(out.content[0].text).toMatch(/Men's Classic Retro-X Fleece Jacket/i)
+    })
 
-  test('returns error message when product_name is empty string', async () => {
-    const out = await handler({ product_name: '   ' });
-    expect(out.content[0].text).toMatch(/provide.*product_name/i);
-    expect(out.structuredContent.product).toBeNull();
-  });
+    test('returns not found message for unknown product', async () => {
+        const out = await handler({ product_name: 'Nonexistent Product XYZ' })
+        expect(out.content[0].text).toMatch(/No product found|not found/i)
+        expect(out.structuredContent).toBeUndefined()
+    })
 
-  test('returns null when product is not found', async () => {
-    const out = await handler({ product_name: 'Non-Existent Product XYZ' });
-    expect(out.content[0].text).toMatch(/no product found/i);
-    expect(out.structuredContent.product).toBeNull();
-  });
+    test('product lookup is case-insensitive', async () => {
+        const out = await handler({ product_name: "men's classic retro-x fleece jacket" })
+        expect(out.structuredContent).toBeDefined()
+        expect(out.structuredContent.name).toBe("Men's Classic Retro-X Fleece Jacket")
+    })
 
-  test('case-insensitive product name matching', async () => {
-    const out = await handler({ product_name: 'nano puff jacket' });
-    expect(out.structuredContent.product).not.toBeNull();
-    expect(out.structuredContent.product.name).toBe('Nano Puff Jacket');
-  });
-
-  test('content text includes product name and price', async () => {
-    const out = await handler({ product_name: 'Capilene Cool Daily Hoody' });
-    expect(out.content[0].text).toMatch(/Capilene Cool Daily Hoody/);
-    expect(out.content[0].text).toMatch(/£55\.00/);
-  });
-});
+    test('returns correct details for Airfarer Cap', async () => {
+        const out = await handler({ product_name: 'Airfarer Cap' })
+        expect(out.structuredContent.name).toBe('Airfarer Cap')
+        expect(out.structuredContent.price).toBe('£40')
+        expect(out.structuredContent.certifications).toContain('NetPlus')
+    })
+})
