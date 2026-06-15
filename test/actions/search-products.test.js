@@ -1,49 +1,57 @@
-const handler = require('../../actions/search-products/index.js');
+const handler = require('../../actions/search-products/index.js')
 
 describe('search_products handler', () => {
-    test('"Show me some Patagonia products" returns product list', async () => {
-        const out = await handler({});
-        expect(out).toHaveProperty('content');
-        expect(Array.isArray(out.content)).toBe(true);
-        expect(out.content[0]).toMatchObject({ type: 'text', text: expect.any(String) });
-        expect(out.content[0].text).toMatch(/Found \d+ Patagonia product/);
-    });
+    test('returns content block shape on happy path', async () => {
+        const out = await handler({ query: 'jacket' })
+        expect(out).toHaveProperty('content')
+        expect(Array.isArray(out.content)).toBe(true)
+        expect(out.content[0]).toMatchObject({ type: 'text', text: expect.any(String) })
+    })
 
     test('structuredContent is a plain object, not a bare array', async () => {
-        const out = await handler({});
-        expect(typeof out.structuredContent).toBe('object');
-        expect(Array.isArray(out.structuredContent)).toBe(false);
-    });
+        const out = await handler({ query: 'jacket' })
+        expect(typeof out.structuredContent).toBe('object')
+        expect(Array.isArray(out.structuredContent)).toBe(false)
+    })
 
-    test('structuredContent.products contains product items', async () => {
-        const out = await handler({});
-        expect(out.structuredContent).toHaveProperty('products');
-        expect(Array.isArray(out.structuredContent.products)).toBe(true);
-        expect(out.structuredContent.products.length).toBeGreaterThan(0);
-    });
+    test('"Show me some outdoor jackets" returns jacket products', async () => {
+        const out = await handler({ query: 'jacket' })
+        const products = out.structuredContent.products
+        expect(products.length).toBeGreaterThan(0)
+        expect(products.every(p => p.name.toLowerCase().includes('jacket'))).toBe(true)
+    })
 
     test('filters by category', async () => {
-        const out = await handler({ category: 'Fleece' });
-        const products = out.structuredContent.products;
-        expect(products.every(p => p.category && p.category.includes('Fleece'))).toBe(true);
-        expect(out.content[0].text).toMatch(/Fleece/);
-    });
+        const out = await handler({ category: 'Men\'s Jackets' })
+        const products = out.structuredContent.products
+        expect(products.length).toBeGreaterThan(0)
+        expect(products.every(p => p.category === 'Men\'s Jackets')).toBe(true)
+    })
 
-    test('filters by gender', async () => {
-        const out = await handler({ gender: "Women's" });
-        const products = out.structuredContent.products;
-        expect(products.every(p => p.category && p.category.includes("Women's"))).toBe(true);
-        expect(out.content[0].text).toMatch(/Women's/);
-    });
+    test('filters by both query and category', async () => {
+        const out = await handler({ query: 'torrentshell', category: 'Women\'s Jackets' })
+        const products = out.structuredContent.products
+        expect(products.length).toBe(1)
+        expect(products[0].name).toBe('Women\'s Torrentshell 3L Rain Jacket')
+    })
 
-    test('returns empty result when no products match filters', async () => {
-        const out = await handler({ category: 'Nonexistent Category' });
-        expect(out.structuredContent.products).toEqual([]);
-        expect(out.content[0].text).toMatch(/No products found/i);
-    });
+    test('returns empty array when no products match', async () => {
+        const out = await handler({ query: 'nonexistent product' })
+        const products = out.structuredContent.products
+        expect(products.length).toBe(0)
+        expect(out.content[0].text).toMatch(/no products found/i)
+    })
 
-    test('returns all products when no filters are applied', async () => {
-        const out = await handler({});
-        expect(out.structuredContent.products.length).toBe(5);
-    });
-});
+    test('returns all products when no filters provided', async () => {
+        const out = await handler({})
+        const products = out.structuredContent.products
+        expect(products.length).toBe(5)
+    })
+
+    test('query searches both name and description', async () => {
+        const out = await handler({ query: 'waterproof' })
+        const products = out.structuredContent.products
+        expect(products.length).toBeGreaterThan(0)
+        expect(products.some(p => p.description.toLowerCase().includes('waterproof'))).toBe(true)
+    })
+})

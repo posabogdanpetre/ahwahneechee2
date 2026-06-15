@@ -1,85 +1,84 @@
-// TODO: Replace MOCK_DATA with a real API call.
-// See the TODO block below the handler for endpoint details.
 const MOCK_DATA = [
     {
-        "name": "Women's Better Sweater Fleece Jacket",
-        "description": "Full-zip jacket made of warm, 100% recycled polyester fleece.",
-        "image_url": "https://eu.patagonia.com/dw/image/v2/BDJB_PRD/on/demandware.static/-/Sites-patagonia-master/default/dw0e491b7c/images/hi-res/25543_STH.jpg",
-        "price": "",
-        "category": "Women's Fleece"
+        name: 'Men\'s Torrentshell 3L Rain Jacket',
+        description: 'Waterproof/breathable 3-layer rain jacket providing excellent performance, comfort and durability.',
+        image_url: 'https://eu.patagonia.com/dw/image/v2/BDJB_PRD/on/demandware.static/-/Sites-patagonia-master/default/dw3f39aea6/images/hi-res/85241_LMST.jpg?sw=1400&sh=1400&sfrm=png&q=90&bgcolor=f3f4ef',
+        price: '£180',
+        category: 'Men\'s Jackets',
+        product_id: '85241_LMST'
     },
     {
-        "name": "Men's Houdini Windbreaker Jacket",
-        "description": "Packable, featherweight windproof shell made from 100% recycled nylon.",
-        "image_url": "https://eu.patagonia.com/dw/image/v2/BDJB_PRD/on/demandware.static/-/Sites-patagonia-master/default/dw4c81478a/images/hi-res/24142_BLK.jpg",
-        "price": "",
-        "category": "Men's Jackets"
+        name: 'Women\'s Nano Puff Packable Insulated Jacket',
+        description: 'Warm, windproof, water-resistant jacket with lightweight compressible insulation for packability.',
+        image_url: 'https://eu.patagonia.com/dw/image/v2/BDJB_PRD/on/demandware.static/-/Sites-patagonia-master/default/dwbdabaa49/images/hi-res/84218_SMDB.jpg?sw=1400&sh=1400&sfrm=png&q=90&bgcolor=f3f4ef',
+        price: '£170',
+        category: 'Women\'s Jackets',
+        product_id: '84218_SMDB'
     },
     {
-        "name": "Women's Retro Pile Fleece Jacket",
-        "description": "Heritage-inspired jacket made with 100% recycled polyester deep-pile fleece.",
-        "image_url": "https://eu.patagonia.com/dw/image/v2/BDJB_PRD/on/demandware.static/-/Sites-patagonia-master/default/dw5e1dce1a/images/hi-res/22795_NAT.jpg",
-        "price": "",
-        "category": "Women's Fleece"
+        name: 'Men\'s Better Sweater Fleece Jacket',
+        description: 'Warm, low-bulk full-zip jacket made of sweater-knit 100% recycled polyester fleece.',
+        image_url: 'https://eu.patagonia.com/dw/image/v2/BDJB_PRD/on/demandware.static/-/Sites-patagonia-master/default/dwf4894a9f/images/hi-res/25528_BLK.jpg?sw=1400&sh=1400&sfrm=png&q=90&bgcolor=f3f4ef',
+        price: '£130',
+        category: 'Men\'s Fleece',
+        product_id: '25528_BLK'
     },
     {
-        "name": "Women's Better Sweater 1/4-Zip Fleece Pullover",
-        "description": "Quarter-zip pullover with sweater-knit aesthetic in 100% recycled polyester.",
-        "image_url": "https://eu.patagonia.com/dw/image/v2/BDJB_PRD/on/demandware.static/-/Sites-patagonia-master/default/dwb3c2fcac/images/hi-res/25618_BCW.jpg",
-        "price": "",
-        "category": "Women's Fleece"
+        name: 'Women\'s Torrentshell 3L Rain Jacket',
+        description: 'Exceptional waterproof/breathable rain jacket providing performance, comfort and durability.',
+        image_url: 'https://eu.patagonia.com/dw/image/v2/BDJB_PRD/on/demandware.static/-/Sites-patagonia-master/default/dw5b977282/images/hi-res/85246_BLK.jpg?sw=1400&sh=1400&sfrm=png&q=90&bgcolor=f3f4ef',
+        price: '£180',
+        category: 'Women\'s Jackets',
+        product_id: '85246_BLK'
     },
     {
-        "name": "Men's Windsweep Lightweight Windbreaker Jacket",
-        "description": "Lightweight, packable windbreaker for everyday adventures.",
-        "image_url": "https://eu.patagonia.com/dw/image/v2/BDJB_PRD/on/demandware.static/-/Sites-patagonia-master/default/dw9a7b312e/images/hi-res/20320_INK.jpg",
-        "price": "",
-        "category": "Men's Jackets"
+        name: 'Men\'s Durable Down Parka',
+        description: 'Lofty 800-fill-power down belay jacket with two-way zipper and rock abrasion resistance.',
+        image_url: 'https://eu.patagonia.com/dw/image/v2/BDJB_PRD/on/demandware.static/-/Sites-patagonia-master/default/dw903101cf/images/hi-res/85520_SMDB.jpg?sw=1400&sh=1400&sfrm=png&q=90&bgcolor=f3f4ef',
+        price: '£575',
+        category: 'Men\'s Jackets',
+        product_id: '85520_SMDB'
     }
-];
+]
 
-module.exports = async ({ category = '', gender = '', sport = '' }) => {
+module.exports = async ({ query = '', category = '' }) => {
     const results = MOCK_DATA.filter(item => {
-        if (category && item.category && !item.category.includes(category)) return false;
-        if (gender && item.category && !item.category.includes(gender)) return false;
-        return true;
-    });
+        if (category && item.category !== category) return false
+        if (query && !item.name.toLowerCase().includes(query.toLowerCase()) && !item.description.toLowerCase().includes(query.toLowerCase())) return false
+        return true
+    })
 
-    const contentText = results.length === 0
-        ? 'No products found matching your filters.'
-        : `Found ${results.length} Patagonia product${results.length === 1 ? '' : 's'}${category ? ` in ${category}` : ''}${gender ? ` for ${gender}` : ''}.`;
+    const contentText = results.length > 0
+        ? `Found ${results.length} product${results.length === 1 ? '' : 's'}${category ? ` in ${category}` : ''}${query ? ` matching "${query}"` : ''}.`
+        : `No products found${category ? ` in ${category}` : ''}${query ? ` matching "${query}"` : ''}.`
 
     return {
-        content: [
-            { type: 'text', text: contentText }
-        ],
+        content: [{ type: 'text', text: contentText }],
         // structuredContent.products — bare array outputSchema; key derived from actionName "search_products"
         structuredContent: { products: results }
-    };
-};
+    }
+}
 
 /*
  * TODO: Replace MOCK_DATA with a real API call.
  *
  * Suggested endpoint pattern (update based on actual site API):
- *   GET ${process.env.API_BASE_URL}/products?category=${category}&gender=${gender}&sport=${sport}
+ *   GET ${process.env.API_BASE_URL}/products?query=${query}&category=${category}
  *
  * Environment variables to configure:
  *   API_BASE_URL   Base URL of the Patagonia API
  *   API_KEY        API key if required (add to .env and app.config.yaml)
  *
- * Authentication: check the Patagonia developer docs or network requests
+ * Authentication: check the website's developer docs or network requests
  *   captured during browsing for the correct auth header pattern.
  *
  * Example fetch:
- *   const params = new URLSearchParams();
- *   if (category) params.append('category', category);
- *   if (gender) params.append('gender', gender);
- *   if (sport) params.append('sport', sport);
- *   const res = await fetch(
- *     `${process.env.API_BASE_URL}/products?${params.toString()}`,
- *     { headers: { 'Authorization': `Bearer ${process.env.API_KEY}` } }
- *   );
- *   if (!res.ok) throw new Error(`API error: ${res.status}`);
- *   return await res.json();
+ *   const url = new URL(`${process.env.API_BASE_URL}/products`)
+ *   if (query) url.searchParams.append('query', query)
+ *   if (category) url.searchParams.append('category', category)
+ *   const res = await fetch(url.toString(), {
+ *     headers: { 'Authorization': `Bearer ${process.env.API_KEY}` }
+ *   })
+ *   if (!res.ok) throw new Error(`API error: ${res.status}`)
+ *   return await res.json()
  */
