@@ -1,46 +1,62 @@
-const handler = require('../../actions/get-product-details/index.js')
+const handler = require('../../actions/get-product-details/index.js');
 
-describe('get_product_details handler', () => {
-    test('returns content block shape on happy path', async () => {
-        const out = await handler({ product_name: "Women's Down Sweater Insulated Jacket" })
-        expect(out).toHaveProperty('content')
-        expect(Array.isArray(out.content)).toBe(true)
-        expect(out.content[0]).toMatchObject({ type: 'text', text: expect.any(String) })
-    })
+describe('get_product_details', () => {
+  it('should return product details for a valid product name', async () => {
+    const result = await handler({ product_name: 'Better Sweater Fleece Jacket' });
 
-    test('structuredContent is a plain object, not a bare array', async () => {
-        const out = await handler({ product_name: "Women's Down Sweater Insulated Jacket" })
-        expect(typeof out.structuredContent).toBe('object')
-        expect(Array.isArray(out.structuredContent)).toBe(false)
-    })
+    expect(result.content).toBeDefined();
+    expect(result.content[0].type).toBe('text');
+    expect(result.content[0].text).toContain("Women's Better Sweater Fleece Jacket");
+    expect(result.content[0].text).toContain('100% recycled polyester fleece');
+    expect(result.content[0].text).toContain('Fair Trade Certified');
 
-    test('returns error message when required arg is missing', async () => {
-        const out = await handler({})
-        expect(out.content[0].text).toMatch(/product_name|provide/i)
-    })
+    expect(result.structuredContent).toBeDefined();
+    expect(typeof result.structuredContent).toBe('object');
+    expect(Array.isArray(result.structuredContent)).toBe(false);
+    expect(result.structuredContent.name).toBe("Women's Better Sweater Fleece Jacket");
+    expect(result.structuredContent.price).toBe(139);
+    expect(result.structuredContent.category).toBe("Women's Fleece");
+    expect(result.structuredContent.material).toBe('100% recycled polyester fleece');
+    expect(Array.isArray(result.structuredContent.features)).toBe(true);
+    expect(result.structuredContent.features.length).toBeGreaterThan(0);
+    expect(result.structuredContent.certifications).toBeTruthy();
+  });
 
-    test('"Tell me more about the Women\'s Down Sweater Insulated Jacket" returns product details', async () => {
-        const out = await handler({ product_name: "Women's Down Sweater Insulated Jacket" })
-        expect(out.structuredContent).toMatchObject({
-            name: "Women's Down Sweater Insulated Jacket",
-            price: "£230",
-            category: "Women's Insulated Jackets"
-        })
-        expect(out.structuredContent.description).toContain('Lightweight')
-        expect(out.structuredContent.image_url).toBeDefined()
-    })
+  it('should return error when product_name is missing', async () => {
+    const result = await handler({});
 
-    test('returns no structuredContent when product is not found', async () => {
-        const out = await handler({ product_name: 'Nonexistent Product XYZ' })
-        expect(out.content[0].text).toMatch(/No product found|not found/i)
-        expect(out.structuredContent).toBeUndefined()
-    })
+    expect(result.isError).toBe(true);
+    expect(result.content[0].text).toContain('product_name is required');
+  });
 
-    test('lookup is case-insensitive', async () => {
-        const out = await handler({ product_name: "men's textured fleece jacket" })
-        expect(out.structuredContent).toMatchObject({
-            name: "Men's Textured Fleece Jacket",
-            price: "£150"
-        })
-    })
-})
+  it('should return error when product_name is empty string', async () => {
+    const result = await handler({ product_name: '   ' });
+
+    expect(result.isError).toBe(true);
+    expect(result.content[0].text).toContain('product_name is required');
+  });
+
+  it('should return error when product is not found', async () => {
+    const result = await handler({ product_name: 'Nonexistent Product XYZ123' });
+
+    expect(result.isError).toBe(true);
+    expect(result.content[0].text).toContain('No product found matching');
+    expect(result.content[0].text).toContain('Nonexistent Product XYZ123');
+  });
+
+  it('should perform case-insensitive search', async () => {
+    const result = await handler({ product_name: 'houdini windbreaker' });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent.name).toBe("Men's Houdini Windbreaker Jacket");
+    expect(result.content[0].text).toContain("Men's Houdini Windbreaker Jacket");
+  });
+
+  it('should find product with partial name match', async () => {
+    const result = await handler({ product_name: 'Retro Pile' });
+
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent.name).toBe("Women's Retro Pile Fleece Jacket");
+    expect(result.structuredContent.material).toBe('100% recycled polyester deep-pile fleece');
+  });
+});
