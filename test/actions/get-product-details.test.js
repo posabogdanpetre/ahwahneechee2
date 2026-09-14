@@ -1,46 +1,53 @@
-const handler = require('../../actions/get-product-details/index.js')
+const handler = require('../../actions/get-product-details/index.js');
 
 describe('get_product_details handler', () => {
-    test('returns content block shape on happy path', async () => {
-        const out = await handler({ product_name: "Women's Down Sweater Insulated Jacket" })
-        expect(out).toHaveProperty('content')
-        expect(Array.isArray(out.content)).toBe(true)
-        expect(out.content[0]).toMatchObject({ type: 'text', text: expect.any(String) })
-    })
+    const validId = 'pantofi-alergare-dama-asics-gel-kayano-32-sunny-sizzle-ss-2026';
 
-    test('structuredContent is a plain object, not a bare array', async () => {
-        const out = await handler({ product_name: "Women's Down Sweater Insulated Jacket" })
-        expect(typeof out.structuredContent).toBe('object')
-        expect(Array.isArray(out.structuredContent)).toBe(false)
-    })
+    test('content is an array of text blocks', async () => {
+        const out = await handler({ product_id: validId });
+        expect(Array.isArray(out.content)).toBe(true);
+        expect(out.content[0]).toMatchObject({ type: 'text', text: expect.any(String) });
+    });
 
-    test('returns error message when required arg is missing', async () => {
-        const out = await handler({})
-        expect(out.content[0].text).toMatch(/product_name|provide/i)
-    })
+    test('"full picture on the Asics Gel-Kayano 32" returns the product detail', async () => {
+        const out = await handler({ product_id: validId });
+        expect(out.content[0].text.length).toBeGreaterThan(0);
+        expect(out.structuredContent).toBeDefined();
+        expect(out.structuredContent.name).toMatch(/Gel-Kayano 32/);
+        expect(out.structuredContent.product_url).toMatch(/^https:\/\//);
+    });
 
-    test('"Tell me more about the Women\'s Down Sweater Insulated Jacket" returns product details', async () => {
-        const out = await handler({ product_name: "Women's Down Sweater Insulated Jacket" })
-        expect(out.structuredContent).toMatchObject({
-            name: "Women's Down Sweater Insulated Jacket",
-            price: "£230",
-            category: "Women's Insulated Jackets"
-        })
-        expect(out.structuredContent.description).toContain('Lightweight')
-        expect(out.structuredContent.image_url).toBeDefined()
-    })
+    test('structuredContent is a flat plain object, not a bare array', async () => {
+        const out = await handler({ product_id: validId });
+        expect(typeof out.structuredContent).toBe('object');
+        expect(Array.isArray(out.structuredContent)).toBe(false);
+        // detail shape — fields flat, no wrapper key
+        expect(out.structuredContent.product).toBeUndefined();
+        expect(out.structuredContent.available_sizes).toEqual(
+            expect.arrayContaining(['37', '40 1/2']),
+        );
+    });
 
-    test('returns no structuredContent when product is not found', async () => {
-        const out = await handler({ product_name: 'Nonexistent Product XYZ' })
-        expect(out.content[0].text).toMatch(/No product found|not found/i)
-        expect(out.structuredContent).toBeUndefined()
-    })
+    test('resolves a product by partial id match', async () => {
+        const out = await handler({ product_id: 'garmin-forerunner-970' });
+        expect(out.structuredContent.product_id).toBe('ceas-garmin-forerunner-970-amoled');
+    });
 
-    test('lookup is case-insensitive', async () => {
-        const out = await handler({ product_name: "men's textured fleece jacket" })
-        expect(out.structuredContent).toMatchObject({
-            name: "Men's Textured Fleece Jacket",
-            price: "£150"
-        })
-    })
-})
+    test('accepts an optional variant argument', async () => {
+        const out = await handler({ product_id: validId, variant: '39' });
+        expect(out.content[0].text).toMatch(/39/);
+        expect(out.structuredContent.name).toMatch(/Gel-Kayano 32/);
+    });
+
+    test('returns error message when product_id is missing', async () => {
+        const out = await handler({});
+        expect(out.content[0].text).toMatch(/product_id|provide/i);
+        expect(out.structuredContent).toEqual({});
+    });
+
+    test('unknown product id returns not-found with empty structuredContent', async () => {
+        const out = await handler({ product_id: 'does-not-exist-xyz' });
+        expect(out.content[0].text).toMatch(/no product found|not found/i);
+        expect(out.structuredContent).toEqual({});
+    });
+});
